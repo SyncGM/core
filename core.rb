@@ -20,12 +20,17 @@
 # 
 #++
 module SES
+  #--
+  # ============================================================================
+  # Script
+  # ============================================================================
+  #++
   # Provides metadata (name, author, and version) for scripts.
   class Script
     attr_reader :data
     
     # Provides simple formatting for script names -- spaces are replaced with
-    # underscores and vice versa. Returns the formatted +name+ as a symbol.
+    # underscores and vice versa. Returns the formatted name as a symbol.
     def self.format(name)
       name = name.to_s
       (name.include?(' ') ? name.gsub(' ', '_') : name.gsub('_', ' ')).to_sym
@@ -49,6 +54,11 @@ module SES
     end
     alias :to_s :description
   end
+  #--
+  # ============================================================================
+  # Register
+  # ============================================================================
+  #++
   # Maintains a record of installed scripts and performs verification for any
   # subsequent script requirements.
   module Register
@@ -74,8 +84,9 @@ module SES
     end
     
     # Returns an array of Script instances with metadata which matches all of
-    # the passed queries. Note: script names must be passed as symbols in the
-    # proper format, not strings.
+    # the passed queries.
+    # NOTE: script names must be passed as symbols in the proper format, not
+    # strings.
     def self.entries_for(*queries)
       @scripts.values.select do |script|
         queries.all? do |query|
@@ -110,9 +121,19 @@ module SES
       !entries_for(*queries).empty?
     end
   end
+  #--
+  # ============================================================================
+  # Extensions
+  # ============================================================================
+  #++
   # Defines methods to be included in the base RPG data structures and other
   # classes defined by RPG Maker VX Ace's default scripts.
   module Extensions
+    #--
+    # ==========================================================================
+    # Notes
+    # ==========================================================================
+    #++
     # Provides the scan_ses_notes method for objects with note boxes.
     module Notes
       # Scans note boxes with passed regular expressions and evaluates given
@@ -124,6 +145,11 @@ module SES
         end
       end
     end
+    #--
+    # ==========================================================================
+    # Comments
+    # ==========================================================================
+    #++
     # Provides the comments and scan_ses_comments methods for use with events
     # and common events.
     module Comments
@@ -144,6 +170,11 @@ module SES
         end
       end
     end
+    #--
+    # ==========================================================================
+    # Interpreter
+    # ==========================================================================
+    #++
     # Provides the event method for use with instances of the interpreter.
     module Interpreter
       # Returns the instance of Game_Event represented by the passed id value
@@ -159,7 +190,11 @@ module SES
   Description = Script.new(:Core, 2.0, :Solistra)
   Register.enter(Description)
 end
+#--
+# ==============================================================================
 # Class
+# ==============================================================================
+#++
 class Class
   # Aliased to automatically include the SES module into any class or module
   # defined within the SES module's namespace.
@@ -169,7 +204,11 @@ class Class
     ses_class_new(*args, &block)
   end
 end
+#--
+# ==============================================================================
 # RPG
+# ==============================================================================
+#++
 module RPG
   # Including the SES extensions for note boxes and comments into the default
   # RPG Maker VX Ace data structures that make use of them.
@@ -179,11 +218,19 @@ module RPG
     base_classes.each { |base_class| base_class.send(:include, extension) }
   end
 end
+#--
+# ==============================================================================
 # Game_Event
+# ==============================================================================
+#++
 class Game_Event < Game_Character
   include SES::Extensions::Comments
 end
+#--
+# ==============================================================================
 # Game_Interpreter
+# ==============================================================================
+#++
 class Game_Interpreter
   include SES::Extensions::Comments
   include SES::Extensions::Interpreter
