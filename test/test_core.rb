@@ -10,7 +10,6 @@
 # (such as third-party scripts or scripters).
 # 
 #++
-
 module SES::TestCases
   # ============================================================================
   # CoreScriptTest - Unit tests for the SES::Script class.
