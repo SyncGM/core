@@ -140,7 +140,7 @@ module SES
           tags.each do |regex, code|
             if line[regex]
               if code.is_a?(String) then eval(code)
-              else instance_exec(*$~[1..$~.size], &code)
+              else instance_exec(*$~[1...$~.size], &code)
               end
             end
           end
@@ -171,7 +171,7 @@ module SES
           tags.each do |regex, code|
             if comment[regex]
               if code.is_a?(String) then eval(code)
-              else instance_exec(*$~[1..$~.size], &code)
+              else instance_exec(*$~[1...$~.size], &code)
               end
             end
           end
