@@ -1,5 +1,5 @@
-#--
-# Core v2.0 by Solistra
+﻿#--
+# Core v2.1 by Solistra and Enelvon
 # =============================================================================
 # 
 # Summary
@@ -132,10 +132,18 @@ module SES
     module Notes
       # Scans note boxes with passed regular expressions and evaluates given
       # strings appropriately. Regular expressions are given as keys to tags,
-      # while strings of interpretable Ruby code are given as values.
+      # while strings of interpretable Ruby code are given as values. Procs
+      # and Lambdas may be used instead of strings - they will be called on
+      # the current object with the instance_exec method.
       def scan_ses_notes(tags = {})
         note.split(/[\r\n+]/).each do |line|
-          tags.each { |regex, code| eval(code) if regex =~ line }
+          tags.each do |regex, code|
+            if line[regex]
+              if code.is_a?(String) then eval(code)
+              else instance_exec(*$~[1..$~.size], &code)
+              end
+            end
+          end
         end
       end
     end
@@ -155,10 +163,18 @@ module SES
       
       # Scans comments with passed regular expressions and evaluates given
       # strings appropriately. Regular expressions are given as keys to tags,
-      # while strings of interpretable Ruby code are given as values.
+      # while strings of interpretable Ruby code are given as values. Procs
+      # and Lambdas may be used instead of strings - they will be called on
+      # the current object with the instance_exec method.
       def scan_ses_comments(tags = {})
         comments.each do |comment|
-          tags.each { |regex, code| eval(code) if regex =~ comment }
+          tags.each do |regex, code|
+            if comment[regex]
+              if code.is_a?(String) then eval(code)
+              else instance_exec(*$~[1..$~.size], &code)
+              end
+            end
+          end
         end
       end
     end
