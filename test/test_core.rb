@@ -157,6 +157,7 @@ module SES::TestCases
   class CoreExtensionsTest < SES::Test::Spec
     describe 'Extensions' do SES::Extensions end
     let :event do MockEvent.new end
+    let :item  do MockItem.new  end
     
     # Provides a simple "mock" event for testing purposes.
     class MockEvent
@@ -171,6 +172,16 @@ module SES::TestCases
       end
     end
     
+    # Provides a simple "mock" item for testing purposes.
+    class MockItem
+      include SES::Extensions::Notes
+      attr_reader :note
+      
+      def initialize
+        @note = '<test>'
+      end
+    end
+    
     it 'provide appropriate methods' do
       subject::Notes.instance_methods.must_include(:scan_ses_notes)
       [:comments, :scan_ses_comments].each do |instance_method|
@@ -181,11 +192,15 @@ module SES::TestCases
       end
     end
     
-    it '::Notes#scan_ses_notes scans notes appropriately' do
-      (tester = RPG::BaseItem.new).note = '<test>'
+    it '::Notes#scan_ses_notes scans notes given a String' do
       capture_output do
-        tester.scan_ses_notes(/<test>/ => 'puts "Success."')
-        tester.scan_ses_notes(/<test>/ =>  proc { puts "Success." })
+        item.scan_ses_notes(/<test>/ => 'puts "Success."')
+      end.must_equal "Success.\n"
+    end
+    
+    it '::Notes#scan_ses_notes scans notes given a Proc' do
+      capture_output do
+        item.scan_ses_notes(/<test>/ => -> { puts 'Success.' })
       end.must_equal "Success.\n"
     end
     
@@ -193,10 +208,15 @@ module SES::TestCases
       event.comments.must_equal ['<test>', 'Second line.']
     end
     
-    it '::Comments#scan_ses_comments scans comments appropriately' do
+    it '::Comments#scan_ses_comments scans comments given a String' do
       capture_output do
         event.scan_ses_comments(/<test>/ => 'puts "Success."')
-        event.scan_ses_comments(/<test>/ =>  proc { puts "Success." })
+      end.must_equal "Success.\n"
+    end
+    
+    it '::Comments#scan_ses_comments scans comments given a Proc' do
+      capture_output do
+        event.scan_ses_comments(/<test>/ => -> { puts 'Success.' })
       end.must_equal "Success.\n"
     end
     
