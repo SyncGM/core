@@ -185,6 +185,7 @@ module SES::TestCases
       (tester = RPG::BaseItem.new).note = '<test>'
       capture_output do
         tester.scan_ses_notes(/<test>/ => 'puts "Success."')
+        tester.scan_ses_notes(/<test>/ =>  proc { puts "Success." })
       end.must_equal "Success.\n"
     end
     
@@ -195,6 +196,7 @@ module SES::TestCases
     it '::Comments#scan_ses_comments scans comments appropriately' do
       capture_output do
         event.scan_ses_comments(/<test>/ => 'puts "Success."')
+        event.scan_ses_comments(/<test>/ =>  proc { puts "Success." })
       end.must_equal "Success.\n"
     end
     
