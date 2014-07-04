@@ -1,5 +1,5 @@
 ﻿#--
-# Core v2.1 by Solistra and Enelvon
+# Core v2.2 by Solistra and Enelvon
 # =============================================================================
 # 
 # Summary
