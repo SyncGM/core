@@ -193,7 +193,7 @@ module SES
   end
   
   # Record script metadata in the Register.
-  Description = Script.new(:Core, 2.0, :Solistra)
+  Description = Script.new(:Core, 2.1, :Solistra)
   Register.enter(Description)
 end
 # =============================================================================
