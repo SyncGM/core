@@ -52,7 +52,7 @@ module SES
     def description
       "SES #{self.class.format(name)} (v#{version})"
     end
-    alias :to_s :description
+    alias_method :to_s, :description
   end
   # ===========================================================================
   # Register
@@ -188,7 +188,7 @@ module SES
       def event(id = @event_id)
         id > 0 ? $game_map.events[id] : self
       end
-      alias :this :event
+      alias_method :this, :event
     end
   end
   
@@ -202,7 +202,7 @@ end
 class Class
   # Aliased to automatically include the SES module into any class or module
   # defined within the SES module's namespace.
-  alias :ses_class_new :new
+  alias_method :ses_class_new, :new
   def new(*args, &block)
     include ::SES if ancestors.any? { |ancestor| ancestor.to_s[/^SES[^:{2}]/] }
     ses_class_new(*args, &block)
