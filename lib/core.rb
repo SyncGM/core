@@ -1,5 +1,5 @@
 ﻿#--
-# Core v2.1 by Solistra and Enelvon
+# Core v2.2 by Solistra and Enelvon
 # =============================================================================
 # 
 # Summary
@@ -193,7 +193,7 @@ module SES
   end
   
   # Record script metadata in the Register.
-  Description = Script.new(:Core, 2.1)
+  Description = Script.new(:Core, 2.2)
   Register.enter(Description)
 end
 # =============================================================================
