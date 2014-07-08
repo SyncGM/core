@@ -244,7 +244,7 @@ module SES
   end
   
   # Record script metadata in the Register.
-  Description = Script.new(:Core, 2.2)
+  Description = Script.new(:Core, 2.3)
   Register.enter(Description)
 end
 # =============================================================================
@@ -284,3 +284,7 @@ class Game_Interpreter
   include SES::Extensions::Comments
   include SES::Extensions::Interpreter
 end
+# =============================================================================
+# Main
+# =============================================================================
+Object.extend(SES::MethodData::Overwrites)
