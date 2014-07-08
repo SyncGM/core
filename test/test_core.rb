@@ -81,12 +81,6 @@ module SES::TestCases
       clean_register(script.name)
     end
     
-    it '.enter adds a default script to the register if none given' do
-      subject.enter
-      subject.scripts.keys.must_include(:Undefined_Script)
-      clean_register(:Undefined_Script)
-    end
-    
     it '.enter adds formatted script information to $imported' do
       subject.enter(script)
       $imported.keys.must_include(:SES_Example)
