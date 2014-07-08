@@ -1,0 +1,3 @@
+-m markdown
+--title "SES Core Documentation"
+lib/core.rb
