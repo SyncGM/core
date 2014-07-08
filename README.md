@@ -1,5 +1,5 @@
 
-Core v2.2 by Solistra and Enelvon
+Core v2.3 by Solistra and Enelvon
 =============================================================================
 
 Summary
@@ -7,13 +7,15 @@ Summary
   This script provides the basic foundation for all SES scripts written by
 Enelvon and Solistra. It provides necessary infrastructure and an assortment
 of utility methods and extensions to the defaults provided by RPG Maker VX
-Ace.
+Ace. In addition, this script provides automatic registration of aliased and
+overwritten methods which may be accessed through the `SES::MethodData`
+module.
 
 License
 -----------------------------------------------------------------------------
   This script is made available under the terms of the MIT Expat license.
-View [this page](http://sesvxace.wordpress.com/license/) for more detailed
-information.
+View [this page](http://sesvxace.wordpress.com/license/)  or the included
+LICENSE file for more detailed information.
 
 Installation
 -----------------------------------------------------------------------------

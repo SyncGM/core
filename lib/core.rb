@@ -7,13 +7,15 @@
 #   This script provides the basic foundation for all SES scripts written by
 # Enelvon and Solistra. It provides necessary infrastructure and an assortment
 # of utility methods and extensions to the defaults provided by RPG Maker VX
-# Ace.
+# Ace. In addition, this script provides automatic registration of aliased and
+# overwritten methods which may be accessed through the `SES::MethodData`
+# module.
 # 
 # License
 # -----------------------------------------------------------------------------
 #   This script is made available under the terms of the MIT Expat license.
-# View [this page](http://sesvxace.wordpress.com/license/) for more detailed
-# information.
+# View [this page](http://sesvxace.wordpress.com/license/)  or the included
+# LICENSE file for more detailed information.
 # 
 # Installation
 # -----------------------------------------------------------------------------
@@ -395,6 +397,8 @@ end
 class Module
   # Aliased to automatically register methods aliased via `alias_method` with
   # the {SES::MethodData.register_alias} method.
+  # 
+  # @see {#alias_method}
   alias_method :ses_core_module_alias_method, :alias_method
   
   # Performs method aliasing in a more predictable way than `alias`.
@@ -414,6 +418,8 @@ end
 class Class
   # Aliased to automatically include the {SES} module into any class or module
   # defined within the {SES} module's namespace.
+  # 
+  # @see {#new}
   alias_method :ses_core_class_new, :new
   
   # Instantiates a new instance of `self`.
