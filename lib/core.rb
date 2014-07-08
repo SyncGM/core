@@ -1,5 +1,5 @@
 ﻿#--
-# Core v2.2 by Solistra and Enelvon
+# Core v2.3 by Solistra and Enelvon
 # =============================================================================
 # 
 # Summary
@@ -189,6 +189,57 @@ module SES
         id > 0 ? $game_map.events[id] : self
       end
       alias_method :this, :event
+    end
+  end
+  # ===========================================================================
+  # MethodData
+  # ===========================================================================
+  # Provides information regarding aliased and overwritten methods.
+  module MethodData
+    class << self
+      attr_reader :overwrites
+    end
+    
+    @overwrites = {}
+    
+    def self.register_overwrite(object, name)
+      @overwrites[object] ||= []
+      unless @overwrites[object].include?(name)
+        @overwrites[object].push(name)
+      end
+    end
+    # =========================================================================
+    # Overwrites
+    # =========================================================================
+    module Overwrites
+      def overwrites(*names)
+        if names.empty?
+          @_overwrite = true
+        else
+          names.each do |name|
+            unless instance_methods.include?(name) || respond_to?(name)
+              raise NoMethodError, "No `#{name}` method to overwrite"
+            end
+            SES::MethodData.register_overwrite(self, name)
+          end
+        end
+        return nil
+      end
+      alias_method :overwrite, :overwrites
+      
+      def method_added(name)
+        return super unless @_overwrite
+        SES::MethodData.register_overwrite(self, name)
+        @_overwrite = nil
+        super
+      end
+  
+      def singleton_method_added(name)
+        return super unless @_overwrite
+        SES::MethodData.register_overwrite(self, name)
+        @_overwrite = nil
+        super
+      end
     end
   end
   
