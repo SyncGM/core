@@ -41,7 +41,7 @@ module SES
       # 
       # @return [Hash{Object => Hash{Symbol => Array<Symbol>}}]
       attr_reader :aliases
-    
+      
       # Hash of registered overwritten methods. Keys are objects with methods
       # that have been overwritten, values are arrays of overwritten method
       # names.
@@ -49,11 +49,18 @@ module SES
       # @return [Hash{Object => Array<Symbol>}]
       attr_reader :overwrites
     end
-  
+    
     @aliases    = {}
     @overwrites = {}
-  
+    
     # Performs registration of method aliases.
+    # 
+    # @todo lib/core.rb: Currently, defining an alias in a singleton class
+    #   registers the singleton class itself as the object where the alias was
+    #   defined rather than the desired constant value.
+    # 
+    # @note This method ignores aliases generated via stubbed objects defined
+    #   with the SES Test Case framework.
     # 
     # @param object [Object] the class or module where an alias was registered
     # @param name [Symbol] the aliased method name
@@ -61,6 +68,7 @@ module SES
     # @return [Boolean] `true` if the alias was added to the registry, `false`
     #   otherwise
     def self.register_alias(object, name, method)
+      return false if [name, method].any? { |m| m =~ /^ses_testcase_stubbed_/ }
       @aliases[object]         ||= {}
       @aliases[object][method] ||= []
       unless @aliases[object][method].include?(name)
@@ -69,7 +77,7 @@ module SES
       end
       false
     end
-  
+    
     # Performs registration of method overwrites.
     # 
     # @param object [Object] the class or module where the named method was
@@ -114,7 +122,7 @@ module SES
         return nil
       end
       alias_method :overwrite, :overwrites
-    
+      
       # @private
       # Registers the method via {SES::MethodData.register_overwrite} if the
       # {#overwrite} pseudo-keyword was placed directly before its definition.
@@ -127,7 +135,7 @@ module SES
         @_overwrite = nil
         super
       end
-    
+      
       # @private
       # Registers the singleton method via {SES::MethodData.register_overwrite}
       # if the {#overwrite} pseudo-keyword was placed directly before its
@@ -141,7 +149,7 @@ module SES
         @_overwrite = nil
         super
       end
-    
+      
       # Extend all objects with the functionality of this module.
       Object.extend(self)
     end
