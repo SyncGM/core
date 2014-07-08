@@ -69,8 +69,8 @@ module SES
     
     # Defining reader methods and aliases for the Register.
     class << self
-      attr_reader :scripts, :required
-      alias       :entries  :scripts
+      attr_reader  :scripts, :required
+      alias_method :entries, :scripts
     end
     
     # Enters the passed script into the Register and automatically generates an
@@ -197,10 +197,19 @@ module SES
   # Provides information regarding aliased and overwritten methods.
   module MethodData
     class << self
-      attr_reader :overwrites
+      attr_reader :aliases, :overwrites
     end
     
+    @aliases    = {}
     @overwrites = {}
+    
+    def self.register_alias(object, name, method)
+      @aliases[object]         ||= {}
+      @aliases[object][method] ||= []
+      unless @aliases[object][method].include?(name)
+        @aliases[object][method].push(name)
+      end
+    end
     
     def self.register_overwrite(object, name)
       @overwrites[object] ||= []
@@ -248,12 +257,22 @@ module SES
   Register.enter(Description)
 end
 # =============================================================================
+# Module
+# =============================================================================
+class Module
+  alias_method :ses_core_module_alias_method, :alias_method
+  def alias_method(name, method, *args, &block)
+    SES::MethodData.register_alias(self, name, method)
+    ses_core_module_alias_method(name, method, *args, &block)
+  end
+end
+# =============================================================================
 # Class
 # =============================================================================
 class Class
   # Aliased to automatically include the SES module into any class or module
   # defined within the SES module's namespace.
-  alias_method :ses_class_new, :new
+  alias_method :ses_core_class_new, :new
   def new(*args, &block)
     include ::SES if ancestors.any? { |ancestor| ancestor.to_s[/^SES[^:{2}]/] }
     ses_class_new(*args, &block)
