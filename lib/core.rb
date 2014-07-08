@@ -275,7 +275,7 @@ class Class
   alias_method :ses_core_class_new, :new
   def new(*args, &block)
     include ::SES if ancestors.any? { |ancestor| ancestor.to_s[/^SES[^:{2}]/] }
-    ses_class_new(*args, &block)
+    ses_core_class_new(*args, &block)
   end
 end
 # =============================================================================
