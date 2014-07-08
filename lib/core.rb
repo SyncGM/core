@@ -55,9 +55,10 @@ module SES
     
     # Performs registration of method aliases.
     # 
-    # @todo lib/core.rb: Currently, defining an alias in a singleton class
-    #   registers the singleton class itself as the object where the alias was
-    #   defined rather than the desired constant value.
+    # @note Aliases defined on singleton classes will register the actual
+    #   singleton class as a key. This can still be accessed easily, however,
+    #   simply by using the `#singleton_class` method like so:
+    #   `SES::MethodData.aliases[SES::Register.singleton_class]`
     # 
     # @note This method ignores aliases generated via stubbed objects defined
     #   with the SES Test Case framework.
