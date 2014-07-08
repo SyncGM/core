@@ -1,9 +1,9 @@
 #--
 # SES Core Unit Tests
-# ==============================================================================
+# =============================================================================
 # 
 # Summary
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #   This file provides unit tests for the SES Core script. These tests are
 # provided in order to ensure that the SES Core script continues to function
 # properly in the case of script updates or modifications from external sources
@@ -11,9 +11,9 @@
 # 
 #++
 module SES::TestCases
-  # ============================================================================
+  # ===========================================================================
   # CoreScriptTest - Unit tests for the SES::Script class.
-  # ============================================================================
+  # ===========================================================================
   class CoreScriptTest < SES::Test::Spec
     describe 'Script' do SES::Script end
     
@@ -60,17 +60,16 @@ module SES::TestCases
       subject.format('Example Script').must_be_same_as :Example_Script
     end
   end
-  
-  # ============================================================================
+  # ===========================================================================
   # CoreRegisterTest - Unit tests for the SES::Register module.
-  # ============================================================================
+  # ===========================================================================
   class CoreRegisterTest < SES::Test::Spec
     describe 'Register' do SES::Register end
     let :script do SES::Script.new(:Example) end
     
     # Cleans the SES::Register entries and entries in the $imported global
     # variable so these tests do not contaminate either.
-    def clean_register(key)
+    def clean(key)
       subject.scripts.delete(key)
       $imported.delete("SES_#{key}".to_sym)
     end
@@ -78,14 +77,16 @@ module SES::TestCases
     it '.enter adds the passed script to the register' do
       subject.enter(script)
       subject.scripts.values.must_include(script)
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.enter adds formatted script information to $imported' do
       subject.enter(script)
       $imported.keys.must_include(:SES_Example)
       $imported[:SES_Example].must_equal 1.0
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.entries_for finds SES scripts given script name' do
@@ -95,26 +96,30 @@ module SES::TestCases
     it '.entries_for finds SES scripts given single author' do
       subject.enter(example_script = SES::Script.new(:Example, 1.0, :Solistra))
       subject.entries_for(:Solistra).must_include example_script
-      clean_register(example_script.name)
+      
+      clean(example_script.name)
     end
     
     it '.entries_for finds SES scripts with all given authors' do
       subject.enter(script)
       subject.entries_for(:Solistra, :Enelvon).must_include script
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.entries_for finds SES scripts given version number' do
       subject.enter(script)
       subject.entries_for(script.version).must_include script
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.include? returns expected values' do
       subject.include?(script.name).must_be_same_as false
       subject.enter(script)
       subject.include?(script.name).must_be_same_as true
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.require raises LoadError if requirement is not present' do
@@ -128,26 +133,28 @@ module SES::TestCases
       begin
         subject.require({ :Example => 2.0 })
       rescue LoadError ; true else false end
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.require returns true if new requirements were met' do
       subject.enter(script)
       subject.require({ script.name => script.version }).must_be_same_as true
-      clean_register(script.name)
+      
+      clean(script.name)
     end
     
     it '.require returns false if no new requirements met' do
       subject.enter(script)
       subject.require({ script.name => script.version })
       subject.require({ script.name => script.version }).must_be_same_as false
-      clean_register(script.name)
+      
+      clean(script.name)
     end
   end
-  
-  # ============================================================================
+  # ===========================================================================
   # CoreExtensionsTest - Unit tests for extensions to VX Ace data structures.
-  # ============================================================================
+  # ===========================================================================
   class CoreExtensionsTest < SES::Test::Spec
     describe 'Extensions' do SES::Extensions end
     let :event do MockEvent.new end
@@ -229,6 +236,125 @@ module SES::TestCases
     
     it '::Interpreter#event returns interpreter when appropriate' do
       (interpreter = Game_Interpreter.new).event.must_be_same_as interpreter
+    end
+  end
+  # ===========================================================================
+  # CoreMethodDataTest - Unit tests for the SES::MethodData module.
+  # ===========================================================================
+  class CoreMethodDataTest < SES::Test::Spec
+    describe 'MethodData' do SES::MethodData end
+    
+    def clean(type, key)
+      subject.send(type).delete(key)
+    end
+    
+    it '.register_alias registers aliases appropriately' do
+      subject.register_alias(self, :test_clean, :clean)
+      subject.aliases.must_include self
+      subject.aliases[self][:clean].must_include :test_clean
+      
+      clean(:aliases, self)
+    end
+    
+    it '.register_alias returns true with new alias' do
+      subject.register_alias(self, :test_clean, :clean).must_equal true
+      
+      clean(:aliases, self)
+    end
+    
+    it '.register_alias returns false without new alias' do
+      subject.register_alias(self, :test_clean, :clean)
+      subject.register_alias(self, :test_clean, :clean).must_equal false
+      
+      clean(:aliases, self)
+    end
+    
+    it '.register_alias ignores Test Case stubbed object aliases' do
+      object = Object.new
+      object.stub(:object_id, 0) { subject.aliases.cannot_include object }
+    end
+    
+    it '.register_overwrite registers overwrites appropriately' do
+      subject.register_overwrite(self, :clean)
+      subject.overwrites.must_include self
+      subject.overwrites[self].must_include :clean
+      
+      clean(:overwrites, self)
+    end
+    
+    it '.register_overwrite returns true with new overwrite' do
+      subject.register_overwrite(self, :clean).must_equal true
+      
+      clean(:overwrites, self)
+    end
+    
+    it '.register_overwrite returns false without new overwrite' do
+      subject.register_overwrite(self, :clean)
+      subject.register_overwrite(self, :clean).must_equal false
+      
+      clean(:overwrites, self)
+    end
+  end
+  # ===========================================================================
+  # CoreModuleTest - Unit tests for the `alias_method` implementation.
+  # ===========================================================================
+  class CoreModuleTest < SES::Test::Spec
+    describe 'Module' do Module end
+    
+    it '#alias_method automatically registers aliases' do
+      class ::String
+        alias_method :ses_core_test_reverse, :reverse
+      end
+      SES::MethodData.aliases.must_include String
+      SES::MethodData.aliases[String][:reverse].must_include \
+        :ses_core_test_reverse
+      
+      String.send(:undef_method, :ses_core_test_reverse)
+      SES::MethodData.aliases.delete(String)
+    end
+  end
+  # ===========================================================================
+  # CoreMethodDataOverwritesTest - Unit tests for the `overwrites` method and
+  #   related methods provided by the SES::MethodData::Overwrites module.
+  # ===========================================================================
+  class CoreMethodDataOverwritesTest < SES::Test::Spec
+    describe 'Overwrites' do SES::MethodData::Overwrites end
+    
+    # Provides a simple mock object for method overwrite testing.
+    class MockObject
+      def overwrite_this() end
+    end
+    
+    it '#overwrites registers the given overwritten methods' do
+      class MockObject
+        overwrites :overwrite_this
+      end
+      SES::MethodData.overwrites.must_include MockObject
+      SES::MethodData.overwrites[MockObject].must_include :overwrite_this
+      
+      SES::MethodData.overwrites.delete(MockObject)
+    end
+    
+    it '#overwrites raises NoMethodError if method did not exist' do
+      class MockObject
+        begin
+          overwrites :no_method
+        rescue NoMethodError ; true else false
+        end
+      end
+    end
+    
+    it '#overwrites without arguments registers the next method' do
+      class MockObject
+        overwrites
+        def overwrite_this() end
+        def overwrite_that() end
+      end
+      SES::MethodData.overwrites.must_include(MockObject)
+      SES::MethodData.overwrites[MockObject].must_include :overwrite_this
+      SES::MethodData.overwrites[MockObject].cannot_include :overwrite_that
+      
+      SES::MethodData.overwrites.delete(MockObject)
     end
   end
 end
