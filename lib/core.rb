@@ -30,6 +30,150 @@
 # The top-level namespace for all SES scripts.
 module SES
   # ===========================================================================
+  # MethodData
+  # ===========================================================================
+  # Provides information regarding aliased and overwritten methods.
+  module MethodData
+    class << self
+      # Hash of registered aliases. Keys are objects with aliased methods,
+      # values are hashes representing the original method names and all known
+      # aliases of them.
+      # 
+      # @return [Hash{Object => Hash{Symbol => Array<Symbol>}}]
+      attr_reader :aliases
+    
+      # Hash of registered overwritten methods. Keys are objects with methods
+      # that have been overwritten, values are arrays of overwritten method
+      # names.
+      # 
+      # @return [Hash{Object => Array<Symbol>}]
+      attr_reader :overwrites
+    end
+  
+    @aliases    = {}
+    @overwrites = {}
+  
+    # Performs registration of method aliases.
+    # 
+    # @param object [Object] the class or module where an alias was registered
+    # @param name [Symbol] the aliased method name
+    # @param method [Symbol] the original method name
+    # @return [Boolean] `true` if the alias was added to the registry, `false`
+    #   otherwise
+    def self.register_alias(object, name, method)
+      @aliases[object]         ||= {}
+      @aliases[object][method] ||= []
+      unless @aliases[object][method].include?(name)
+        @aliases[object][method].push(name)
+        return true
+      end
+      false
+    end
+  
+    # Performs registration of method overwrites.
+    # 
+    # @param object [Object] the class or module where the named method was
+    #   overwritten
+    # @param name [Symbol] the name of the overwritten method
+    # @return [Boolean] `true` if the overwrite was added to the registry,
+    #   `false` otherwise
+    def self.register_overwrite(object, name)
+      @overwrites[object] ||= []
+      unless @overwrites[object].include?(name)
+        @overwrites[object].push(name)
+        return true
+      end
+      false
+    end
+    # =========================================================================
+    # Overwrites
+    # =========================================================================
+    module Overwrites
+      # Instance method analogous to a new keyword -- functions in the same way
+      # as `public`, `protected`, and `private`. If no method names are given
+      # to this method, the next method defined is automatically considered
+      # overwritten -- otherwise, all of the given method names are registered
+      # as overwritten.
+      # 
+      # @param names [Array<Symbol>] a list of method names as Symbols that are
+      #   being overwritten
+      # @raise [NoMethodError] if any of the given overwrites did not exist in
+      #   the base class
+      # @return [void]
+      def overwrites(*names)
+        if names.empty?
+          @_overwrite = true
+        else
+          names.each do |name|
+            unless instance_methods.include?(name) || respond_to?(name)
+              raise NoMethodError, "No `#{name}` method to overwrite"
+            end
+            SES::MethodData.register_overwrite(self, name)
+          end
+        end
+        return nil
+      end
+      alias_method :overwrite, :overwrites
+    
+      # @private
+      # Registers the method via {SES::MethodData.register_overwrite} if the
+      # {#overwrite} pseudo-keyword was placed directly before its definition.
+      # 
+      # @param name [Symbol] the method which was added
+      # @return [void]
+      def method_added(name)
+        return super unless @_overwrite
+        SES::MethodData.register_overwrite(self, name)
+        @_overwrite = nil
+        super
+      end
+    
+      # @private
+      # Registers the singleton method via {SES::MethodData.register_overwrite}
+      # if the {#overwrite} pseudo-keyword was placed directly before its
+      # definition.
+      # 
+      # @param name [Symbol] the singleton method which was added
+      # @return [void]
+      def singleton_method_added(name)
+        return super unless @_overwrite
+        SES::MethodData.register_overwrite(self, name)
+        @_overwrite = nil
+        super
+      end
+    
+      # Extend all objects with the functionality of this module.
+      Object.extend(self)
+    end
+  end
+end
+# =============================================================================
+# Module
+# =============================================================================
+# The superclass of {Class}; essentially a class without instantiation support.
+class Module
+  # Aliased to automatically register methods aliased via `alias_method` with
+  # the {SES::MethodData.register_alias} method.
+  # 
+  # @see {#alias_method}
+  alias_method :ses_core_module_alias_method, :alias_method
+  
+  # Performs method aliasing in a more predictable way than `alias`.
+  # 
+  # @param name [Symbol] the aliased method name
+  # @param method [Symbol] the original method being aliased
+  # @return [self]
+  def alias_method(name, method, *args, &block)
+    SES::MethodData.register_alias(self, name, method)
+    ses_core_module_alias_method(name, method, *args, &block)
+  end
+end
+# =============================================================================
+# SES
+# =============================================================================
+# The top-level namespace for all SES scripts.
+module SES
+  # ===========================================================================
   # Script
   # ===========================================================================
   # Provides metadata (name, author, and version) for scripts.
@@ -268,148 +412,10 @@ module SES
       alias_method :this, :event
     end
   end
-  # ===========================================================================
-  # MethodData
-  # ===========================================================================
-  # Provides information regarding aliased and overwritten methods.
-  module MethodData
-    class << self
-      # Hash of registered aliases. Keys are objects with aliased methods,
-      # values are hashes representing the original method names and all known
-      # aliases of them.
-      # 
-      # @return [Hash{Object => Hash{Symbol => Array<Symbol>}}]
-      attr_reader :aliases
-      
-      # Hash of registered overwritten methods. Keys are objects with methods
-      # that have been overwritten, values are arrays of overwritten method
-      # names.
-      # 
-      # @return [Hash{Object => Array<Symbol>}]
-      attr_reader :overwrites
-    end
-    
-    @aliases    = {}
-    @overwrites = {}
-    
-    # Performs registration of method aliases.
-    # 
-    # @param object [Object] the class or module where an alias was registered
-    # @param name [Symbol] the aliased method name
-    # @param method [Symbol] the original method name
-    # @return [Boolean] `true` if the alias was added to the registry, `false`
-    #   otherwise
-    def self.register_alias(object, name, method)
-      @aliases[object]         ||= {}
-      @aliases[object][method] ||= []
-      unless @aliases[object][method].include?(name)
-        @aliases[object][method].push(name)
-        return true
-      end
-      false
-    end
-    
-    # Performs registration of method overwrites.
-    # 
-    # @param object [Object] the class or module where the named method was
-    #   overwritten
-    # @param name [Symbol] the name of the overwritten method
-    # @return [Boolean] `true` if the overwrite was added to the registry,
-    #   `false` otherwise
-    def self.register_overwrite(object, name)
-      @overwrites[object] ||= []
-      unless @overwrites[object].include?(name)
-        @overwrites[object].push(name)
-        return true
-      end
-      false
-    end
-    # =========================================================================
-    # Overwrites
-    # =========================================================================
-    module Overwrites
-      # Instance method analogous to a new keyword -- functions in the same way
-      # as `public`, `protected`, and `private`. If no method names are given
-      # to this method, the next method defined is automatically considered
-      # overwritten -- otherwise, all of the given method names are registered
-      # as overwritten.
-      # 
-      # @param names [Array<Symbol>] a list of method names as Symbols that are
-      #   being overwritten
-      # @raise [NoMethodError] if any of the given overwrites did not exist in
-      #   the base class
-      # @return [void]
-      def overwrites(*names)
-        if names.empty?
-          @_overwrite = true
-        else
-          names.each do |name|
-            unless instance_methods.include?(name) || respond_to?(name)
-              raise NoMethodError, "No `#{name}` method to overwrite"
-            end
-            SES::MethodData.register_overwrite(self, name)
-          end
-        end
-        return nil
-      end
-      alias_method :overwrite, :overwrites
-      
-      # @private
-      # Registers the method via {SES::MethodData.register_overwrite} if the
-      # {#overwrite} pseudo-keyword was placed directly before its definition.
-      # 
-      # @param name [Symbol] the method which was added
-      # @return [void]
-      def method_added(name)
-        return super unless @_overwrite
-        SES::MethodData.register_overwrite(self, name)
-        @_overwrite = nil
-        super
-      end
-      
-      # @private
-      # Registers the singleton method via {SES::MethodData.register_overwrite}
-      # if the {#overwrite} pseudo-keyword was placed directly before its
-      # definition.
-      # 
-      # @param name [Symbol] the singleton method which was added
-      # @return [void]
-      def singleton_method_added(name)
-        return super unless @_overwrite
-        SES::MethodData.register_overwrite(self, name)
-        @_overwrite = nil
-        super
-      end
-      
-      # Extend all objects with the functionality of this module.
-      Object.extend(self)
-    end
-  end
   
   # Script metadata as a {Script} instance.
   Description = Script.new(:Core, 2.3)
   Register.enter(Description)
-end
-# =============================================================================
-# Module
-# =============================================================================
-# The superclass of {Class}; essentially a class without instantiation support.
-class Module
-  # Aliased to automatically register methods aliased via `alias_method` with
-  # the {SES::MethodData.register_alias} method.
-  # 
-  # @see {#alias_method}
-  alias_method :ses_core_module_alias_method, :alias_method
-  
-  # Performs method aliasing in a more predictable way than `alias`.
-  # 
-  # @param name [Symbol] the aliased method name
-  # @param method [Symbol] the original method being aliased
-  # @return [self]
-  def alias_method(name, method, *args, &block)
-    SES::MethodData.register_alias(self, name, method)
-    ses_core_module_alias_method(name, method, *args, &block)
-  end
 end
 # =============================================================================
 # Class
