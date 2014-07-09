@@ -213,9 +213,9 @@ module SES
     def initialize(name, version = 1.0, *authors)
       authors = [:Solistra, :Enelvon] if authors.empty?
       (@data = {
-        :name    => self.class.format(name),
-        :authors => authors.map! { |author| author.to_sym },
-        :version => version.to_f
+        name:    self.class.format(name),
+        authors: authors.map! { |author| author.to_sym },
+        version: version.to_f
       }).keys.each { |i| self.class.send(:define_method, i) { @data[i] } }
     end
     
@@ -251,8 +251,8 @@ module SES
     end
     
     @errors = {
-      :not_found => 'The script SES %s is required, but could not be found.',
-      :version   => 'SES %s (v%.1f) is required, but you have %s.'
+      not_found: 'The script SES %s is required, but could not be found.',
+      version:   'SES %s (v%.1f) is required, but you have %s.'
     }
     @required = Hash.new(0)
     @scripts  = {}
@@ -304,11 +304,11 @@ module SES
       scripts.each do |script, version|
         next if @required[script] >= version
         if @scripts[script].nil?
-          raise(LoadError.new(@errors[:not_found] % Script.format(script)))
+          raise LoadError, @errors[:not_found] % Script.format(script)
         elsif @scripts[script].version < version
           message = @errors[:version] % [ Script.format(script), version,
                                           @scripts[script] ]
-          raise(LoadError.new(message))
+          raise LoadError, message
         end
         @required[script] = version
       end
