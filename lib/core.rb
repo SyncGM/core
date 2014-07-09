@@ -351,13 +351,9 @@ module SES
       # 
       # @see Comments#scan_ses_comments
       def scan_ses_notes(tags = {})
-        note.split(/[\r\n+]/).each do |line|
-          tags.each do |regex, code|
-            if line[regex]
-              if code.is_a?(String)
-                eval(code)
-              else instance_exec(*$~[1...$~.size], &code) end
-            end
+        note.split(/[\r\n+]/).each do |l|
+          tags.each do |r, b|
+            b.is_a?(String) ? eval(b) : instance_exec(*$~[1..-1], &b) if l[r]
           end
         end
       end
@@ -391,13 +387,9 @@ module SES
       # 
       # @see Notes#scan_ses_notes
       def scan_ses_comments(tags = {})
-        comments.each do |comment|
-          tags.each do |regex, code|
-            if comment[regex]
-              if code.is_a?(String)
-                eval(code)
-              else instance_exec(*$~[1...$~.size], &code) end
-            end
+        comments.each do |c|
+          tags.each do |r, b|
+            b.is_a?(String) ? eval(b) : instance_exec(*$~[1..-1], &b) if c[r]
           end
         end
       end
