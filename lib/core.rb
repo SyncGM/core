@@ -120,7 +120,6 @@ module SES
             SES::MethodData.register_overwrite(self, name)
           end
         end
-        return nil
       end
       alias_method :overwrite, :overwrites
       
