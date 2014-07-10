@@ -159,7 +159,7 @@ class Module
   # Aliased to automatically register methods aliased via `alias_method` with
   # the {SES::MethodData.register_alias} method.
   # 
-  # @see {#alias_method}
+  # @see #alias_method
   alias_method :ses_core_module_alias_method, :alias_method
   
   # Performs method aliasing in a more predictable way than `alias`.
@@ -413,7 +413,7 @@ class Class
   # Aliased to automatically include the {SES} module into any class or module
   # defined within the {SES} module's namespace.
   # 
-  # @see {#new}
+  # @see #new
   alias_method :ses_core_class_new, :new
   
   # Instantiates a new instance of `self`.
