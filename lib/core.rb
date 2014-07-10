@@ -24,12 +24,10 @@
 # 
 #++
 
-# =============================================================================
 # SES
 # =============================================================================
 # The top-level namespace for all SES scripts.
 module SES
-  # ===========================================================================
   # MethodData
   # ===========================================================================
   # Provides information regarding aliased and overwritten methods.
@@ -94,7 +92,6 @@ module SES
       end
       false
     end
-    # =========================================================================
     # Overwrites
     # =========================================================================
     module Overwrites
@@ -155,7 +152,6 @@ module SES
     end
   end
 end
-# =============================================================================
 # Module
 # =============================================================================
 # The superclass of {Class}; essentially a class without instantiation support.
@@ -176,12 +172,10 @@ class Module
     ses_core_module_alias_method(name, method, *args, &block)
   end
 end
-# =============================================================================
 # SES
 # =============================================================================
 # The top-level namespace for all SES scripts.
 module SES
-  # ===========================================================================
   # Script
   # ===========================================================================
   # Provides metadata (name, author, and version) for scripts.
@@ -227,7 +221,6 @@ module SES
     end
     alias_method :to_s, :description
   end
-  # ===========================================================================
   # Register
   # ===========================================================================
   # Maintains a record of installed scripts and performs verification for any
@@ -327,13 +320,11 @@ module SES
       !entries_for(*queries).empty?
     end
   end
-  # ===========================================================================
   # Extensions
   # ===========================================================================
   # Defines methods to be included in the base `RPG` data structures and other
   # classes defined by RPG Maker VX Ace's default scripts.
   module Extensions
-    # =========================================================================
     # Notes
     # =========================================================================
     # Provides the {#scan_ses_notes} method for objects with note boxes.
@@ -358,7 +349,6 @@ module SES
         end
       end
     end
-    # =========================================================================
     # Comments
     # =========================================================================
     # Provides the {#comments} and {#scan_ses_comments} methods for use with
@@ -394,7 +384,6 @@ module SES
         end
       end
     end
-    # =========================================================================
     # Interpreter
     # =========================================================================
     # Provides the {#event} method for use with instances of the interpreter.
@@ -417,7 +406,6 @@ module SES
   Description = Script.new(:Core, 2.3)
   Register.enter(Description)
 end
-# =============================================================================
 # Class
 # =============================================================================
 # All Ruby classes are instances of this class.
@@ -436,7 +424,6 @@ class Class
     ses_core_class_new(*args, &block)
   end
 end
-# =============================================================================
 # RPG
 # =============================================================================
 # Provides the basic data structures used by the RPG Maker VX Ace editor.
@@ -449,7 +436,6 @@ module RPG
     base_classes.each { |base_class| base_class.send(:include, extension) }
   end
 end
-# =============================================================================
 # Game_Event
 # =============================================================================
 # Handles events. Functions include event page switching via condition
@@ -458,7 +444,6 @@ end
 class Game_Event < Game_Character
   include SES::Extensions::Comments
 end
-# =============================================================================
 # Game_Interpreter
 # =============================================================================
 # An interpreter for executing event commands. This class is used within the
