@@ -20,9 +20,8 @@ module SES::TestCases
       
       it '#overwrites raises NoMethodError if method did not exist' do
         class MockObject
-          begin
+          must_raise(NoMethodError) do
             overwrites :no_method
-          rescue NoMethodError ; true else false
           end
         end
       end
