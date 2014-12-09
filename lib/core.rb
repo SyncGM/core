@@ -1,5 +1,5 @@
 ﻿#--
-# Core v2.3 by Solistra and Enelvon
+# Core v2.4 by Solistra and Enelvon
 # =============================================================================
 # 
 # Summary
@@ -400,7 +400,7 @@ module SES
   end
   
   # Script metadata as a {Script} instance.
-  Description = Script.new(:Core, 2.3)
+  Description = Script.new(:Core, 2.4)
   Register.enter(Description)
 end
 # RPG
