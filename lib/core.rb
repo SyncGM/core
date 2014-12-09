@@ -68,9 +68,7 @@ module SES
     #   otherwise
     def self.register_alias(object, name, method)
       return false if [name, method].any? { |m| m =~ /^ses_testcase_stubbed_/ }
-      @aliases[object]         ||= {}
-      @aliases[object][method] ||= []
-      unless @aliases[object][method].include?(name)
+      unless ((@aliases[object] ||= {})[method] ||= []).include?(name)
         @aliases[object][method].push(name)
         return true
       end
@@ -85,8 +83,7 @@ module SES
     # @return [Boolean] `true` if the overwrite was added to the registry,
     #   `false` otherwise
     def self.register_overwrite(object, name)
-      @overwrites[object] ||= []
-      unless @overwrites[object].include?(name)
+      unless (@overwrites[object] ||= []).include?(name)
         @overwrites[object].push(name)
         return true
       end
@@ -405,24 +402,6 @@ module SES
   # Script metadata as a {Script} instance.
   Description = Script.new(:Core, 2.3)
   Register.enter(Description)
-end
-# Class
-# =============================================================================
-# All Ruby classes are instances of this class.
-class Class
-  # Aliased to automatically include the {SES} module into any class or module
-  # defined within the {SES} module's namespace.
-  # 
-  # @see #new
-  alias_method :ses_core_class_new, :new
-  
-  # Instantiates a new instance of `self`.
-  # 
-  # @return [self]
-  def new(*args, &block)
-    include ::SES if ancestors.any? { |ancestor| ancestor.to_s[/^SES[^:{2}]/] }
-    ses_core_class_new(*args, &block)
-  end
 end
 # RPG
 # =============================================================================
